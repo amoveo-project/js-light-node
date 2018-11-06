@@ -1,3 +1,5 @@
+import '@babel/polyfill';
+
 import EventEmitter from 'eventemitter3';
 
 import RPC from './rpc';

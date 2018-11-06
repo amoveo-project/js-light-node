@@ -5,6 +5,7 @@
   "private": true,
   "main": "index.js",
   "dependencies": {
+    "@babel/polyfill": "7.0.0",
     "big-integer": "1.6.36",
     "dexie": "2.0.4",
     "elliptic": "6.4.1",
