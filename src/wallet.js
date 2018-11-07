@@ -14,27 +14,16 @@ export default class Wallet {
     return this.tree.request_proof('accounts', pubkey);
   }
 
-  getAccountState(receiver, minerFee = undefined) {
+  getAccountState = async (receiver, minerFee = undefined) => {
     if (minerFee === undefined) minerFee = defaultMinerFee;
 
-    const result = new Promise((resolve, reject) => {
-      this.rpc
-        .getAccountState(receiver)
-        .then(state => {
-          const govFeeVar = state === 'empty' ? 14 : 15;
-          this.tree
-            .request_proof('governance', govFeeVar)
-            .then(result => {
-              const fee = treeNumber2Value(result[2]) + minerFee;
-              resolve({ state, fee });
-            })
-            .catch(err => reject(err));
-        })
-        .catch(err => reject(err));
-    });
+    const state = await this.rpc.getAccountState(receiver);
 
-    return result;
-  }
+    const govFeeVar = state === 'empty' ? 14 : 15;
+    const result = this.tree.request_proof('governance', govFeeVar);
+
+    return { fee: treeNumber2Value(result[2]) + minerFee, state };
+  };
 
   createTxProposal = async (origin, receiver, amount, minerFee = undefined) => {
     if (minerFee === undefined) minerFee = defaultMinerFee;
