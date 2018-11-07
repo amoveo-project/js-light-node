@@ -38,6 +38,8 @@ export default class VeoNode {
   }
 
   getBalance() {
+    // promise can throw Error when there is no proof in tree
+    // for instance, in the case when wallet isn't funded yet
     return this.wallet.getBalance().then(response => response[1] / units);
   }
 
