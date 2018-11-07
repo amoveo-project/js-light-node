@@ -18,27 +18,31 @@ export default class Headers {
     this.headers = {};
 
     this.top_difficulty = 0;
+    this.offset = 0;
+    this.timeoutHandler = null;
   }
 
   init = async (offset = 0) => {
     const db = new Dexie('veodb');
     db.version(1).stores({ headers: 'header_hash,acc_difficulty' });
     this.db = db;
+    this.offset = offset;
+
+    console.log('restoring from offset', offset);
 
     const top_header = await db.headers
       .orderBy('acc_difficulty')
       .reverse()
-      .limit(2)
       .offset(offset)
-      //.first();
-      .toArray();
+      .limit(1)
+      .first();
 
-    // TODO: there are cases when top header is broken somehow
+    // there are cases when top header is broken somehow
     // then we need to offset headers by one until we find the header
     // with child we know from full node headers
 
     if (top_header !== undefined) {
-      this.top_header = top_header[0].header;
+      this.top_header = top_header.header;
     } else {
       this.top_header = [
         'header',
@@ -65,7 +69,7 @@ export default class Headers {
     const headers = await this.rpc.getHeaders(this.height + 1, 2501);
 
     if (!headers.length) {
-      setTimeout(this.syncHeaders, 60000);
+      this.timeoutHandler = setTimeout(this.syncHeaders, 60000);
     } else {
       this.height = headers[headers.length - 1][1];
 
@@ -73,12 +77,16 @@ export default class Headers {
         try {
           await this.absorbHeader(headers[idx]);
           this.events.emit('header', headers[idx]);
+          this.offset = 0;
         } catch (e) {
           console.error(e);
+
+          clearTimeout(this.timeoutHandler);
+          setTimeout(() => this.init(this.offset + 1), 0);
         }
       }
 
-      setTimeout(this.syncHeaders, 3000);
+      this.timeoutHandler = setTimeout(this.syncHeaders, 3000);
     }
   };
 
@@ -90,7 +98,8 @@ export default class Headers {
         'Received an orphan header: ' + prev_header_hash,
         next_header,
       );
-      throw Error('unknown parent');
+
+      throw Error('unknown parent, stepping down by one block');
     } else {
       const diff = header[6];
       const RF = params.retarget_frequency;
