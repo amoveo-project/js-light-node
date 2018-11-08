@@ -13,6 +13,16 @@ export default class RPC {
     return data[1].slice(1);
   };
 
+  getNodeHeight = async () => {
+    const response = await fetch(this.url, {
+      method: 'POST',
+      body: JSON.stringify(['height']),
+    });
+
+    const data = await response.json();
+    return data[1];
+  };
+
   getProof = async (tree, key, topHash) => {
     const response = await fetch(this.url, {
       method: 'POST',
