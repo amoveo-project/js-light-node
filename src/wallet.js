@@ -29,7 +29,7 @@ export default class Wallet {
     if (minerFee === undefined) minerFee = defaultMinerFee;
 
     if (minerFee < 9) {
-      throw Error(
+      throw new Error(
         'miner fee specified is less than default min_tx_fee (9 sat)',
       );
     }
@@ -40,16 +40,15 @@ export default class Wallet {
     let currentBalance;
     try {
       currentBalance = await this.getBalance(origin);
+      currentBalance = currentBalance[1];
     } catch (e) {
       currentBalance = 0;
     }
 
     if (currentBalance < fee + amount) {
-      throw Error(
-        'amount + fee = ' +
-          (fee + amount) +
-          ' exceeds available balance ' +
-          currentBalance,
+      throw new Error(
+        `Amount + fee = ${fee +
+          amount} exceeds available balance ${currentBalance}`,
       );
     }
 
