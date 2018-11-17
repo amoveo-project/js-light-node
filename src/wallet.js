@@ -20,7 +20,7 @@ export default class Wallet {
     const state = await this.rpc.getAccountState(receiver);
 
     const govFeeVar = state === 'empty' ? 14 : 15;
-    const result = this.tree.request_proof('governance', govFeeVar);
+    const result = await this.tree.request_proof('governance', govFeeVar);
 
     return { fee: treeNumber2Value(result[2]) + minerFee, state };
   };
