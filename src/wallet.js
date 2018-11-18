@@ -88,4 +88,13 @@ export default class Wallet {
 
     return this.rpc.pushTx(signed);
   };
+
+  getTransactions = (address = this.keys.getPublicKey()) =>
+    this.rpc.getTransactions(address);
+
+  getPendingTransactions = async (address = this.keys.getPublicKey()) => {
+    const transactions = await this.rpc.getPendingPool(address);
+
+    return transactions.filter(tx => tx.from === address || tx.to === address);
+  };
 }

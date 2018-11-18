@@ -13,5 +13,9 @@
     "sourceType": "module"
   },
 
+  "rules": {
+    "import/prefer-default-export": 0
+  },
+
   "parser": "babel-eslint"
 }
