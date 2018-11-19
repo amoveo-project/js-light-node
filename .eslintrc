@@ -14,7 +14,8 @@
   },
 
   "rules": {
-    "import/prefer-default-export": 0
+    "import/prefer-default-export": "off",
+    "no-underscore-dangle":"off"
   },
 
   "parser": "babel-eslint"
