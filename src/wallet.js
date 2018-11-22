@@ -1,12 +1,16 @@
 import { defaultMinerFee } from './config';
-import { treeNumber2Value, arrayToString } from './utils/format';
+import { treeNumber2Value } from './utils/format';
 
 export default class Wallet {
-  constructor(rpc, merkle, headers, keys) {
+  constructor(rpc, merkle, headers, keys, events) {
     this.rpc = rpc;
     this.tree = merkle;
     this.headers = headers;
     this.keys = keys;
+    this.events = events;
+
+    this._pendingTimeout = null;
+    this._pendingTxIds = [];
   }
 
   getBalance(pubkey = undefined) {
@@ -92,9 +96,74 @@ export default class Wallet {
   getTransactions = (address = this.keys.getPublicKey()) =>
     this.rpc.getTransactions(address);
 
-  getPendingTransactions = async (address = this.keys.getPublicKey()) => {
-    const transactions = await this.rpc.getPendingPool(address);
+  getPendingTransactions = async publicAddress => {
+    let address = publicAddress;
 
-    return transactions.filter(tx => tx.from === address || tx.to === address);
+    if (!address) {
+      try {
+        address = this.keys.getPublicKey();
+      } catch (e) {
+        address = '';
+      }
+    }
+
+    if (!address) {
+      return [];
+    }
+
+    const poolTxs = await this.rpc.getPendingPool();
+    const filteredPoolTxs = poolTxs.filter(
+      item => item.tx.from === address || item.tx.to === address,
+    );
+
+    return filteredPoolTxs;
   };
+
+  resetPendingCache = () => {
+    this._pendingTxIds = [];
+  };
+
+  syncPendingTransactions = async () => {
+    let poolTxs = [];
+
+    try {
+      poolTxs = await this.getPendingTransactions();
+    } catch (e) {
+      throw new Error("Can't get pending transactions");
+    }
+
+    const poolTxIds = poolTxs.map(item => item.id);
+
+    const removedTxIds = this._pendingTxIds.filter(
+      item => !poolTxIds.includes(item),
+    );
+
+    poolTxs.forEach(poolTx => {
+      const isAlreadyStored = this._pendingTxIds.includes(poolTx.id);
+
+      if (isAlreadyStored) {
+        return;
+      }
+
+      this.events.emit('VEO_ADD_PENDING_TRANSACTION', poolTx);
+    });
+
+    removedTxIds.forEach(removedTxId => {
+      this.events.emit('VEO_REMOVE_PENDING_TRANSACTION', { id: removedTxId });
+    });
+
+    this._pendingTxIds = poolTxIds;
+  };
+
+  startPendingSync() {
+    if (!this._pendingTimeout) {
+      this._pendingTimeout = setInterval(this.syncPendingTransactions, 20000);
+    }
+
+    this.syncPendingTransactions();
+  }
+
+  stopPendingSync() {
+    clearInterval(this._pendingTimeout);
+  }
 }

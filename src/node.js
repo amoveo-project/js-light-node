@@ -26,7 +26,13 @@ export default class VeoNode {
 
     this.keys = options.keys || new Keys();
 
-    this.wallet = new Wallet(this.rpc, this.tree, this.headers, this.keys);
+    this.wallet = new Wallet(
+      this.rpc,
+      this.tree,
+      this.headers,
+      this.keys,
+      this.events,
+    );
   }
 
   getNodeHeight() {

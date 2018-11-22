@@ -87,7 +87,7 @@ class RPC {
 
     return transactions
       .filter(Array.isArray)
-      .map(tx => parseTransaction(tx[1]));
+      .map(tx => ({ id: tx[2], tx: parseTransaction(tx[1]) }));
   };
 }
 
