@@ -1,6 +1,6 @@
 {
   "name": "amoveo-js-light-node",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Amoveo light node written in JavaScript",
   "private": true,
   "main": "index.js",
