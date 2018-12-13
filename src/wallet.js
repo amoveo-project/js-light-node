@@ -165,5 +165,6 @@ export default class Wallet {
 
   stopPendingSync() {
     clearInterval(this._pendingTimeout);
+    this._pendingTimeout = null;
   }
 }
