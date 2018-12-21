@@ -19,7 +19,7 @@ npm install --save amoveo-js-light-node
 
 ## Usage
 
-```
+```jsx
 import VeoNode from 'amoveo-js-light-node'
 
 const veoNodeUrl = 'http://amoveo.exan.tech:8080';
