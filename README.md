@@ -28,7 +28,7 @@ const veo = new VeoNode(veoNodeUrl);
 
 ## Example
 
-Check our [web wallet](https://github.com/) repo
+Check our [web wallet](https://github.com/amoveo-project/js-web-wallet/) repo
 
 ## License
 
